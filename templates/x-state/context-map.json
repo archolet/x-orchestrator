@@ -1,0 +1,52 @@
+{
+  "$schema": "https://x-orchestrator.claude.ai/schemas/context-map.json",
+  "description": "X-Orchestrator Context Map Template",
+  "_usage": "This file is auto-generated at {project}/.claude/x-state/context-map.json",
+
+  "version": "1.0",
+  "project_path": "",
+  "generated_at": "",
+
+  "structure": {
+    "type": "",
+    "framework": "",
+    "language": "",
+    "build_tool": ""
+  },
+
+  "entry_points": [],
+
+  "modules": [],
+
+  "dependencies": {
+    "production": [],
+    "development": []
+  },
+
+  "file_index": {
+    "total_files": 0,
+    "by_extension": {},
+    "by_directory": {}
+  },
+
+  "hot_files": {
+    "description": "Files frequently accessed in this session",
+    "files": [],
+    "max_size": 20,
+    "decay_factor": 0.9
+  },
+
+  "patterns_detected": {
+    "architecture": [],
+    "design_patterns": [],
+    "frameworks": []
+  },
+
+  "rules_applicable": [],
+
+  "analysis": {
+    "complexity_score": 0,
+    "test_coverage_estimate": 0,
+    "documentation_score": 0
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "name": "dotnet-clean-arch",
+  "displayName": ".NET Clean Architecture",
+  "version": "1.0.0",
+  "description": "Clean Architecture template for .NET 8+ projects",
+  "author": "x-orchestrator",
+  "tags": ["dotnet", "csharp", "clean-architecture", "ddd"],
+  "framework": {
+    "name": "dotnet",
+    "minVersion": "8.0"
+  },
+  "variables": {
+    "projectName": {
+      "type": "string",
+      "description": "Project name (PascalCase)",
+      "required": true,
+      "pattern": "^[A-Z][a-zA-Z0-9]*$"
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Root namespace",
+      "default": "{{projectName}}"
+    },
+    "database": {
+      "type": "choice",
+      "description": "Database provider",
+      "choices": ["sqlserver", "postgresql", "sqlite", "mysql"],
+      "default": "postgresql"
+    },
+    "authentication": {
+      "type": "choice",
+      "description": "Authentication method",
+      "choices": ["jwt", "identity", "none"],
+      "default": "jwt"
+    },
+    "includeDocker": {
+      "type": "boolean",
+      "description": "Include Docker support",
+      "default": true
+    }
+  },
+  "structure": {
+    "directories": [
+      "src/{{projectName}}.Domain/Entities",
+      "src/{{projectName}}.Domain/ValueObjects",
+      "src/{{projectName}}.Domain/Events",
+      "src/{{projectName}}.Domain/Exceptions",
+      "src/{{projectName}}.Domain/Interfaces",
+      "src/{{projectName}}.Application/Common/Behaviors",
+      "src/{{projectName}}.Application/Common/Interfaces",
+      "src/{{projectName}}.Application/Common/Models",
+      "src/{{projectName}}.Application/Features",
+      "src/{{projectName}}.Infrastructure/Persistence",
+      "src/{{projectName}}.Infrastructure/Identity",
+      "src/{{projectName}}.Infrastructure/Services",
+      "src/{{projectName}}.Api/Controllers",
+      "src/{{projectName}}.Api/Middleware",
+      "src/{{projectName}}.Api/Filters",
+      "tests/{{projectName}}.Domain.Tests",
+      "tests/{{projectName}}.Application.Tests",
+      "tests/{{projectName}}.Infrastructure.Tests",
+      "tests/{{projectName}}.Api.Tests"
+    ],
+    "files": [
+      {
+        "source": "templates/solution.sln",
+        "destination": "{{projectName}}.sln"
+      },
+      {
+        "source": "templates/Domain.csproj",
+        "destination": "src/{{projectName}}.Domain/{{projectName}}.Domain.csproj"
+      },
+      {
+        "source": "templates/Application.csproj",
+        "destination": "src/{{projectName}}.Application/{{projectName}}.Application.csproj"
+      },
+      {
+        "source": "templates/Infrastructure.csproj",
+        "destination": "src/{{projectName}}.Infrastructure/{{projectName}}.Infrastructure.csproj"
+      },
+      {
+        "source": "templates/Api.csproj",
+        "destination": "src/{{projectName}}.Api/{{projectName}}.Api.csproj"
+      },
+      {
+        "source": "templates/Entity.cs",
+        "destination": "src/{{projectName}}.Domain/Common/Entity.cs"
+      },
+      {
+        "source": "templates/ValueObject.cs",
+        "destination": "src/{{projectName}}.Domain/Common/ValueObject.cs"
+      },
+      {
+        "source": "templates/DomainEvent.cs",
+        "destination": "src/{{projectName}}.Domain/Common/DomainEvent.cs"
+      },
+      {
+        "source": "templates/Result.cs",
+        "destination": "src/{{projectName}}.Domain/Common/Result.cs"
+      },
+      {
+        "source": "templates/IRepository.cs",
+        "destination": "src/{{projectName}}.Domain/Interfaces/IRepository.cs"
+      },
+      {
+        "source": "templates/ApplicationDbContext.cs",
+        "destination": "src/{{projectName}}.Infrastructure/Persistence/ApplicationDbContext.cs"
+      },
+      {
+        "source": "templates/Program.cs",
+        "destination": "src/{{projectName}}.Api/Program.cs"
+      },
+      {
+        "source": "templates/appsettings.json",
+        "destination": "src/{{projectName}}.Api/appsettings.json"
+      }
+    ],
+    "conditionalFiles": [
+      {
+        "condition": "includeDocker",
+        "files": [
+          {
+            "source": "templates/Dockerfile",
+            "destination": "Dockerfile"
+          },
+          {
+            "source": "templates/docker-compose.yml",
+            "destination": "docker-compose.yml"
+          }
+        ]
+      }
+    ]
+  },
+  "postActions": [
+    {
+      "type": "command",
+      "description": "Restore NuGet packages",
+      "command": "dotnet restore"
+    },
+    {
+      "type": "command",
+      "description": "Build solution",
+      "command": "dotnet build --no-restore"
+    }
+  ],
+  "rules": [
+    "architecture/clean-arch.md",
+    "architecture/ddd.md",
+    "principles/solid.md",
+    "patterns/repository.md",
+    "patterns/unit-of-work.md"
+  ]
+}

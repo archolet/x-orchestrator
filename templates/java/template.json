@@ -1,0 +1,210 @@
+{
+  "name": "java-spring-hexagonal",
+  "displayName": "Java Spring Boot Hexagonal",
+  "version": "1.0.0",
+  "description": "Spring Boot project with Hexagonal Architecture and DDD patterns",
+  "author": "x-orchestrator",
+  "tags": ["java", "spring-boot", "hexagonal", "ddd"],
+  "framework": {
+    "name": "java",
+    "minVersion": "21"
+  },
+  "variables": {
+    "projectName": {
+      "type": "string",
+      "description": "Project name (kebab-case)",
+      "required": true,
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "groupId": {
+      "type": "string",
+      "description": "Maven group ID",
+      "required": true,
+      "pattern": "^[a-z][a-z0-9.]*$",
+      "default": "com.example"
+    },
+    "artifactId": {
+      "type": "string",
+      "description": "Maven artifact ID",
+      "default": "{{projectName}}"
+    },
+    "packageName": {
+      "type": "string",
+      "description": "Base package name",
+      "default": "{{groupId}}.{{projectName | replace('-', '')}}"
+    },
+    "database": {
+      "type": "choice",
+      "description": "Database provider",
+      "choices": ["postgresql", "mysql", "h2", "mongodb"],
+      "default": "postgresql"
+    },
+    "buildTool": {
+      "type": "choice",
+      "description": "Build tool",
+      "choices": ["maven", "gradle"],
+      "default": "maven"
+    },
+    "includeDocker": {
+      "type": "boolean",
+      "description": "Include Docker support",
+      "default": true
+    },
+    "includeKubernetes": {
+      "type": "boolean",
+      "description": "Include Kubernetes manifests",
+      "default": false
+    }
+  },
+  "structure": {
+    "directories": [
+      "src/main/java/{{packagePath}}/domain/model",
+      "src/main/java/{{packagePath}}/domain/port/in",
+      "src/main/java/{{packagePath}}/domain/port/out",
+      "src/main/java/{{packagePath}}/domain/service",
+      "src/main/java/{{packagePath}}/domain/event",
+      "src/main/java/{{packagePath}}/domain/exception",
+      "src/main/java/{{packagePath}}/application/usecase",
+      "src/main/java/{{packagePath}}/application/dto",
+      "src/main/java/{{packagePath}}/adapter/in/web",
+      "src/main/java/{{packagePath}}/adapter/in/messaging",
+      "src/main/java/{{packagePath}}/adapter/out/persistence/entity",
+      "src/main/java/{{packagePath}}/adapter/out/persistence/repository",
+      "src/main/java/{{packagePath}}/adapter/out/persistence/mapper",
+      "src/main/java/{{packagePath}}/adapter/out/external",
+      "src/main/java/{{packagePath}}/config",
+      "src/main/resources",
+      "src/test/java/{{packagePath}}/domain",
+      "src/test/java/{{packagePath}}/application",
+      "src/test/java/{{packagePath}}/adapter",
+      "src/test/resources"
+    ],
+    "files": [
+      {
+        "source": "templates/pom.xml",
+        "destination": "pom.xml",
+        "condition": "buildTool === 'maven'"
+      },
+      {
+        "source": "templates/build.gradle",
+        "destination": "build.gradle",
+        "condition": "buildTool === 'gradle'"
+      },
+      {
+        "source": "templates/Application.java",
+        "destination": "src/main/java/{{packagePath}}/Application.java"
+      },
+      {
+        "source": "templates/Entity.java",
+        "destination": "src/main/java/{{packagePath}}/domain/model/Entity.java"
+      },
+      {
+        "source": "templates/AggregateRoot.java",
+        "destination": "src/main/java/{{packagePath}}/domain/model/AggregateRoot.java"
+      },
+      {
+        "source": "templates/ValueObject.java",
+        "destination": "src/main/java/{{packagePath}}/domain/model/ValueObject.java"
+      },
+      {
+        "source": "templates/DomainEvent.java",
+        "destination": "src/main/java/{{packagePath}}/domain/event/DomainEvent.java"
+      },
+      {
+        "source": "templates/UseCase.java",
+        "destination": "src/main/java/{{packagePath}}/domain/port/in/UseCase.java"
+      },
+      {
+        "source": "templates/Repository.java",
+        "destination": "src/main/java/{{packagePath}}/domain/port/out/Repository.java"
+      },
+      {
+        "source": "templates/WebConfig.java",
+        "destination": "src/main/java/{{packagePath}}/config/WebConfig.java"
+      },
+      {
+        "source": "templates/PersistenceConfig.java",
+        "destination": "src/main/java/{{packagePath}}/config/PersistenceConfig.java"
+      },
+      {
+        "source": "templates/GlobalExceptionHandler.java",
+        "destination": "src/main/java/{{packagePath}}/adapter/in/web/GlobalExceptionHandler.java"
+      },
+      {
+        "source": "templates/application.yml",
+        "destination": "src/main/resources/application.yml"
+      },
+      {
+        "source": "templates/application-dev.yml",
+        "destination": "src/main/resources/application-dev.yml"
+      },
+      {
+        "source": "templates/application-prod.yml",
+        "destination": "src/main/resources/application-prod.yml"
+      },
+      {
+        "source": "templates/logback-spring.xml",
+        "destination": "src/main/resources/logback-spring.xml"
+      }
+    ],
+    "conditionalFiles": [
+      {
+        "condition": "includeDocker",
+        "files": [
+          {
+            "source": "templates/Dockerfile",
+            "destination": "Dockerfile"
+          },
+          {
+            "source": "templates/docker-compose.yml",
+            "destination": "docker-compose.yml"
+          }
+        ]
+      },
+      {
+        "condition": "includeKubernetes",
+        "files": [
+          {
+            "source": "templates/k8s/deployment.yml",
+            "destination": "k8s/deployment.yml"
+          },
+          {
+            "source": "templates/k8s/service.yml",
+            "destination": "k8s/service.yml"
+          },
+          {
+            "source": "templates/k8s/configmap.yml",
+            "destination": "k8s/configmap.yml"
+          }
+        ]
+      }
+    ]
+  },
+  "postActions": [
+    {
+      "type": "command",
+      "description": "Build project",
+      "command": "{{buildTool === 'maven' ? 'mvn clean compile' : 'gradle build'}}"
+    },
+    {
+      "type": "command",
+      "description": "Run tests",
+      "command": "{{buildTool === 'maven' ? 'mvn test' : 'gradle test'}}"
+    }
+  ],
+  "rules": [
+    "architecture/hexagonal.md",
+    "architecture/ddd.md",
+    "principles/solid.md",
+    "patterns/repository.md",
+    "patterns/unit-of-work.md"
+  ],
+  "conventions": {
+    "classes": "PascalCase",
+    "interfaces": "PascalCase (no I prefix)",
+    "methods": "camelCase",
+    "variables": "camelCase",
+    "constants": "UPPER_SNAKE_CASE",
+    "packages": "lowercase"
+  }
+}

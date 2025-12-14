@@ -1,0 +1,213 @@
+{
+  "name": "python-fastapi-clean",
+  "displayName": "Python FastAPI Clean Architecture",
+  "version": "1.0.0",
+  "description": "FastAPI project with Clean Architecture, async support, and best practices",
+  "author": "x-orchestrator",
+  "tags": ["python", "fastapi", "async", "clean-architecture"],
+  "framework": {
+    "name": "python",
+    "minVersion": "3.11"
+  },
+  "variables": {
+    "projectName": {
+      "type": "string",
+      "description": "Project name (snake_case)",
+      "required": true,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "packageName": {
+      "type": "string",
+      "description": "Python package name",
+      "default": "{{projectName}}"
+    },
+    "database": {
+      "type": "choice",
+      "description": "Database provider",
+      "choices": ["postgresql", "mysql", "sqlite", "mongodb"],
+      "default": "postgresql"
+    },
+    "orm": {
+      "type": "choice",
+      "description": "ORM choice",
+      "choices": ["sqlalchemy", "tortoise", "odmantic"],
+      "default": "sqlalchemy"
+    },
+    "authentication": {
+      "type": "choice",
+      "description": "Authentication method",
+      "choices": ["jwt", "oauth2", "api-key", "none"],
+      "default": "jwt"
+    },
+    "includeDocker": {
+      "type": "boolean",
+      "description": "Include Docker support",
+      "default": true
+    },
+    "includeCelery": {
+      "type": "boolean",
+      "description": "Include Celery for background tasks",
+      "default": false
+    }
+  },
+  "structure": {
+    "directories": [
+      "src/{{packageName}}/domain/entities",
+      "src/{{packageName}}/domain/value_objects",
+      "src/{{packageName}}/domain/events",
+      "src/{{packageName}}/domain/exceptions",
+      "src/{{packageName}}/domain/interfaces",
+      "src/{{packageName}}/application/use_cases",
+      "src/{{packageName}}/application/dtos",
+      "src/{{packageName}}/application/interfaces",
+      "src/{{packageName}}/infrastructure/persistence/repositories",
+      "src/{{packageName}}/infrastructure/persistence/models",
+      "src/{{packageName}}/infrastructure/external_services",
+      "src/{{packageName}}/api/routes",
+      "src/{{packageName}}/api/dependencies",
+      "src/{{packageName}}/api/middleware",
+      "tests/unit/domain",
+      "tests/unit/application",
+      "tests/integration",
+      "tests/e2e"
+    ],
+    "files": [
+      {
+        "source": "templates/pyproject.toml",
+        "destination": "pyproject.toml"
+      },
+      {
+        "source": "templates/requirements.txt",
+        "destination": "requirements.txt"
+      },
+      {
+        "source": "templates/requirements-dev.txt",
+        "destination": "requirements-dev.txt"
+      },
+      {
+        "source": "templates/__init__.py",
+        "destination": "src/{{packageName}}/__init__.py"
+      },
+      {
+        "source": "templates/main.py",
+        "destination": "src/{{packageName}}/main.py"
+      },
+      {
+        "source": "templates/config.py",
+        "destination": "src/{{packageName}}/config.py"
+      },
+      {
+        "source": "templates/entity_base.py",
+        "destination": "src/{{packageName}}/domain/entities/base.py"
+      },
+      {
+        "source": "templates/value_object_base.py",
+        "destination": "src/{{packageName}}/domain/value_objects/base.py"
+      },
+      {
+        "source": "templates/repository_interface.py",
+        "destination": "src/{{packageName}}/domain/interfaces/repository.py"
+      },
+      {
+        "source": "templates/database.py",
+        "destination": "src/{{packageName}}/infrastructure/persistence/database.py"
+      },
+      {
+        "source": "templates/api_routes.py",
+        "destination": "src/{{packageName}}/api/routes/__init__.py"
+      },
+      {
+        "source": "templates/health_route.py",
+        "destination": "src/{{packageName}}/api/routes/health.py"
+      },
+      {
+        "source": "templates/dependencies.py",
+        "destination": "src/{{packageName}}/api/dependencies/__init__.py"
+      },
+      {
+        "source": "templates/conftest.py",
+        "destination": "tests/conftest.py"
+      },
+      {
+        "source": "templates/.env.example",
+        "destination": ".env.example"
+      },
+      {
+        "source": "templates/.gitignore",
+        "destination": ".gitignore"
+      }
+    ],
+    "conditionalFiles": [
+      {
+        "condition": "includeDocker",
+        "files": [
+          {
+            "source": "templates/Dockerfile",
+            "destination": "Dockerfile"
+          },
+          {
+            "source": "templates/docker-compose.yml",
+            "destination": "docker-compose.yml"
+          }
+        ]
+      },
+      {
+        "condition": "includeCelery",
+        "files": [
+          {
+            "source": "templates/celery_app.py",
+            "destination": "src/{{packageName}}/infrastructure/celery_app.py"
+          },
+          {
+            "source": "templates/tasks.py",
+            "destination": "src/{{packageName}}/infrastructure/tasks/__init__.py"
+          }
+        ]
+      },
+      {
+        "condition": "authentication === 'jwt'",
+        "files": [
+          {
+            "source": "templates/auth/jwt_handler.py",
+            "destination": "src/{{packageName}}/infrastructure/auth/jwt_handler.py"
+          },
+          {
+            "source": "templates/auth/auth_middleware.py",
+            "destination": "src/{{packageName}}/api/middleware/auth.py"
+          }
+        ]
+      }
+    ]
+  },
+  "postActions": [
+    {
+      "type": "command",
+      "description": "Create virtual environment",
+      "command": "python -m venv venv"
+    },
+    {
+      "type": "command",
+      "description": "Install dependencies",
+      "command": "pip install -r requirements.txt -r requirements-dev.txt"
+    },
+    {
+      "type": "command",
+      "description": "Run initial tests",
+      "command": "pytest tests/ -v"
+    }
+  ],
+  "rules": [
+    "architecture/clean-arch.md",
+    "architecture/hexagonal.md",
+    "principles/solid.md",
+    "patterns/repository.md"
+  ],
+  "conventions": {
+    "classes": "PascalCase",
+    "functions": "snake_case",
+    "variables": "snake_case",
+    "constants": "UPPER_SNAKE_CASE",
+    "files": "snake_case",
+    "modules": "snake_case"
+  }
+}

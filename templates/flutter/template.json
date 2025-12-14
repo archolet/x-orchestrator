@@ -1,0 +1,240 @@
+{
+  "name": "flutter-clean-bloc",
+  "displayName": "Flutter Clean Architecture with BLoC",
+  "version": "1.0.0",
+  "description": "Flutter project with Clean Architecture and BLoC state management",
+  "author": "x-orchestrator",
+  "tags": ["flutter", "dart", "bloc", "clean-architecture", "mobile"],
+  "framework": {
+    "name": "flutter",
+    "minVersion": "3.16.0"
+  },
+  "variables": {
+    "projectName": {
+      "type": "string",
+      "description": "Project name (snake_case)",
+      "required": true,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "appName": {
+      "type": "string",
+      "description": "Display name of the app",
+      "required": true
+    },
+    "orgName": {
+      "type": "string",
+      "description": "Organization name (reverse domain)",
+      "required": true,
+      "pattern": "^[a-z][a-z0-9.]*$",
+      "default": "com.example"
+    },
+    "stateManagement": {
+      "type": "choice",
+      "description": "State management solution",
+      "choices": ["bloc", "riverpod", "provider"],
+      "default": "bloc"
+    },
+    "platforms": {
+      "type": "multiselect",
+      "description": "Target platforms",
+      "choices": ["android", "ios", "web", "macos", "windows", "linux"],
+      "default": ["android", "ios"]
+    },
+    "includeFirebase": {
+      "type": "boolean",
+      "description": "Include Firebase integration",
+      "default": false
+    },
+    "includeLocalStorage": {
+      "type": "choice",
+      "description": "Local storage solution",
+      "choices": ["hive", "sqflite", "shared_preferences", "none"],
+      "default": "hive"
+    }
+  },
+  "structure": {
+    "directories": [
+      "lib/core/constants",
+      "lib/core/error",
+      "lib/core/network",
+      "lib/core/usecases",
+      "lib/core/utils",
+      "lib/core/widgets",
+      "lib/core/theme",
+      "lib/features",
+      "lib/config/routes",
+      "lib/config/di",
+      "lib/l10n",
+      "test/core",
+      "test/features",
+      "assets/images",
+      "assets/icons",
+      "assets/fonts"
+    ],
+    "files": [
+      {
+        "source": "templates/pubspec.yaml",
+        "destination": "pubspec.yaml"
+      },
+      {
+        "source": "templates/analysis_options.yaml",
+        "destination": "analysis_options.yaml"
+      },
+      {
+        "source": "templates/main.dart",
+        "destination": "lib/main.dart"
+      },
+      {
+        "source": "templates/app.dart",
+        "destination": "lib/app.dart"
+      },
+      {
+        "source": "templates/injection_container.dart",
+        "destination": "lib/config/di/injection_container.dart"
+      },
+      {
+        "source": "templates/app_router.dart",
+        "destination": "lib/config/routes/app_router.dart"
+      },
+      {
+        "source": "templates/app_theme.dart",
+        "destination": "lib/core/theme/app_theme.dart"
+      },
+      {
+        "source": "templates/app_colors.dart",
+        "destination": "lib/core/theme/app_colors.dart"
+      },
+      {
+        "source": "templates/failure.dart",
+        "destination": "lib/core/error/failure.dart"
+      },
+      {
+        "source": "templates/exceptions.dart",
+        "destination": "lib/core/error/exceptions.dart"
+      },
+      {
+        "source": "templates/usecase.dart",
+        "destination": "lib/core/usecases/usecase.dart"
+      },
+      {
+        "source": "templates/network_info.dart",
+        "destination": "lib/core/network/network_info.dart"
+      },
+      {
+        "source": "templates/api_client.dart",
+        "destination": "lib/core/network/api_client.dart"
+      },
+      {
+        "source": "templates/constants.dart",
+        "destination": "lib/core/constants/constants.dart"
+      },
+      {
+        "source": "templates/strings.dart",
+        "destination": "lib/core/constants/strings.dart"
+      }
+    ],
+    "conditionalFiles": [
+      {
+        "condition": "stateManagement === 'bloc'",
+        "files": [
+          {
+            "source": "templates/bloc/bloc_observer.dart",
+            "destination": "lib/core/utils/bloc_observer.dart"
+          }
+        ]
+      },
+      {
+        "condition": "includeFirebase",
+        "files": [
+          {
+            "source": "templates/firebase/firebase_options.dart",
+            "destination": "lib/firebase_options.dart"
+          }
+        ]
+      },
+      {
+        "condition": "includeLocalStorage === 'hive'",
+        "files": [
+          {
+            "source": "templates/storage/hive_service.dart",
+            "destination": "lib/core/utils/hive_service.dart"
+          }
+        ]
+      }
+    ]
+  },
+  "featureTemplate": {
+    "description": "Template for generating feature modules",
+    "structure": {
+      "directories": [
+        "lib/features/{{featureName}}/data/datasources",
+        "lib/features/{{featureName}}/data/models",
+        "lib/features/{{featureName}}/data/repositories",
+        "lib/features/{{featureName}}/domain/entities",
+        "lib/features/{{featureName}}/domain/repositories",
+        "lib/features/{{featureName}}/domain/usecases",
+        "lib/features/{{featureName}}/presentation/bloc",
+        "lib/features/{{featureName}}/presentation/pages",
+        "lib/features/{{featureName}}/presentation/widgets"
+      ],
+      "files": [
+        {
+          "source": "templates/feature/entity.dart",
+          "destination": "lib/features/{{featureName}}/domain/entities/{{featureName}}.dart"
+        },
+        {
+          "source": "templates/feature/repository_interface.dart",
+          "destination": "lib/features/{{featureName}}/domain/repositories/{{featureName}}_repository.dart"
+        },
+        {
+          "source": "templates/feature/model.dart",
+          "destination": "lib/features/{{featureName}}/data/models/{{featureName}}_model.dart"
+        },
+        {
+          "source": "templates/feature/repository_impl.dart",
+          "destination": "lib/features/{{featureName}}/data/repositories/{{featureName}}_repository_impl.dart"
+        },
+        {
+          "source": "templates/feature/bloc.dart",
+          "destination": "lib/features/{{featureName}}/presentation/bloc/{{featureName}}_bloc.dart"
+        },
+        {
+          "source": "templates/feature/page.dart",
+          "destination": "lib/features/{{featureName}}/presentation/pages/{{featureName}}_page.dart"
+        }
+      ]
+    }
+  },
+  "postActions": [
+    {
+      "type": "command",
+      "description": "Get Flutter packages",
+      "command": "flutter pub get"
+    },
+    {
+      "type": "command",
+      "description": "Run build_runner",
+      "command": "flutter pub run build_runner build --delete-conflicting-outputs"
+    },
+    {
+      "type": "command",
+      "description": "Analyze project",
+      "command": "flutter analyze"
+    }
+  ],
+  "rules": [
+    "architecture/clean-arch.md",
+    "principles/solid.md",
+    "principles/dry-kiss.md"
+  ],
+  "conventions": {
+    "classes": "PascalCase",
+    "mixins": "PascalCase + Mixin suffix",
+    "extensions": "PascalCase + Extension suffix",
+    "functions": "camelCase",
+    "variables": "camelCase",
+    "constants": "camelCase (with const)",
+    "files": "snake_case",
+    "folders": "snake_case"
+  }
+}

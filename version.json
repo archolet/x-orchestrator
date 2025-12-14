@@ -1,0 +1,21 @@
+{
+  "current_version": "3.1.0",
+  "installed_at": "2025-12-14T14:51:00Z",
+  "last_updated": "2025-12-14T14:51:00Z",
+  "migrations_applied": [],
+  "changelog": {
+    "3.1.0": {
+      "date": "2025-12-14",
+      "features": [
+        "Always Opus 4.5 Strategy",
+        "Circuit Breaker Pattern",
+        "Rate Limiting",
+        "Telemetry & Analytics",
+        "Retention Policy",
+        "Lock Auto-Renew",
+        "Parallel Health Check"
+      ]
+    }
+  },
+  "compatible_claude_code": "2.0.69+"
+}

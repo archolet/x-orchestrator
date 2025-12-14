@@ -1,0 +1,71 @@
+{
+  "$schema": "https://claude.ai/schemas/project-settings.json",
+  "version": "1.0",
+  "description": "X-Orchestrator Project-Level Settings Template",
+  "_usage": "Copy this file to {project}/.claude/settings.json and customize",
+
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Write(./src/**)",
+      "Write(./tests/**)",
+      "Edit(./src/**)",
+      "Edit(./tests/**)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(git:*)"
+    ],
+    "deny": [
+      "Write(./.env)",
+      "Write(./.env.*)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  },
+
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "/x:*",
+        "command": "~/.claude/x-orchestrator/hooks/x-command-router.sh \"$PROMPT\"",
+        "timeout": 5000
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "~/.claude/x-orchestrator/hooks/pre-write-guard.sh \"$TOOL_INPUT\"",
+        "timeout": 10000
+      }
+    ]
+  },
+
+  "context": {
+    "include": [
+      "CLAUDE.md",
+      ".claude/rules/*.md",
+      "package.json",
+      "tsconfig.json"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      "*.log"
+    ]
+  },
+
+  "rules": {
+    "autoLoad": true,
+    "sources": [
+      ".claude/rules",
+      "~/.claude/x-orchestrator/rules-library"
+    ]
+  },
+
+  "telemetry": {
+    "enabled": true,
+    "outputPath": ".claude/x-state/telemetry.json"
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "name": "angular-enterprise",
+  "displayName": "Angular Enterprise",
+  "version": "1.0.0",
+  "description": "Enterprise-grade Angular template with NgRx, lazy loading, and best practices",
+  "author": "x-orchestrator",
+  "tags": ["angular", "typescript", "ngrx", "enterprise"],
+  "framework": {
+    "name": "angular",
+    "minVersion": "17.0"
+  },
+  "variables": {
+    "projectName": {
+      "type": "string",
+      "description": "Project name (kebab-case)",
+      "required": true,
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Component selector prefix",
+      "default": "app",
+      "pattern": "^[a-z]+$"
+    },
+    "stateManagement": {
+      "type": "choice",
+      "description": "State management solution",
+      "choices": ["ngrx", "ngxs", "signals", "none"],
+      "default": "ngrx"
+    },
+    "styling": {
+      "type": "choice",
+      "description": "Styling approach",
+      "choices": ["scss", "tailwind", "material", "primeng"],
+      "default": "scss"
+    },
+    "includeAuth": {
+      "type": "boolean",
+      "description": "Include authentication module",
+      "default": true
+    },
+    "includePWA": {
+      "type": "boolean",
+      "description": "Include PWA support",
+      "default": false
+    }
+  },
+  "structure": {
+    "directories": [
+      "src/app/core/guards",
+      "src/app/core/interceptors",
+      "src/app/core/services",
+      "src/app/core/models",
+      "src/app/shared/components",
+      "src/app/shared/directives",
+      "src/app/shared/pipes",
+      "src/app/shared/utils",
+      "src/app/features",
+      "src/app/layouts",
+      "src/assets/icons",
+      "src/assets/images",
+      "src/environments"
+    ],
+    "files": [
+      {
+        "source": "templates/angular.json",
+        "destination": "angular.json"
+      },
+      {
+        "source": "templates/package.json",
+        "destination": "package.json"
+      },
+      {
+        "source": "templates/tsconfig.json",
+        "destination": "tsconfig.json"
+      },
+      {
+        "source": "templates/app.config.ts",
+        "destination": "src/app/app.config.ts"
+      },
+      {
+        "source": "templates/app.routes.ts",
+        "destination": "src/app/app.routes.ts"
+      },
+      {
+        "source": "templates/app.component.ts",
+        "destination": "src/app/app.component.ts"
+      },
+      {
+        "source": "templates/core.module.ts",
+        "destination": "src/app/core/core.module.ts"
+      },
+      {
+        "source": "templates/shared.module.ts",
+        "destination": "src/app/shared/shared.module.ts"
+      },
+      {
+        "source": "templates/api.service.ts",
+        "destination": "src/app/core/services/api.service.ts"
+      },
+      {
+        "source": "templates/http-error.interceptor.ts",
+        "destination": "src/app/core/interceptors/http-error.interceptor.ts"
+      },
+      {
+        "source": "templates/environment.ts",
+        "destination": "src/environments/environment.ts"
+      },
+      {
+        "source": "templates/environment.prod.ts",
+        "destination": "src/environments/environment.prod.ts"
+      }
+    ],
+    "conditionalFiles": [
+      {
+        "condition": "stateManagement === 'ngrx'",
+        "files": [
+          {
+            "source": "templates/ngrx/store.ts",
+            "destination": "src/app/store/index.ts"
+          },
+          {
+            "source": "templates/ngrx/app.effects.ts",
+            "destination": "src/app/store/app.effects.ts"
+          }
+        ]
+      },
+      {
+        "condition": "includeAuth",
+        "files": [
+          {
+            "source": "templates/auth/auth.module.ts",
+            "destination": "src/app/features/auth/auth.module.ts"
+          },
+          {
+            "source": "templates/auth/auth.service.ts",
+            "destination": "src/app/features/auth/services/auth.service.ts"
+          },
+          {
+            "source": "templates/auth/auth.guard.ts",
+            "destination": "src/app/core/guards/auth.guard.ts"
+          }
+        ]
+      },
+      {
+        "condition": "styling === 'tailwind'",
+        "files": [
+          {
+            "source": "templates/tailwind.config.js",
+            "destination": "tailwind.config.js"
+          }
+        ]
+      }
+    ]
+  },
+  "postActions": [
+    {
+      "type": "command",
+      "description": "Install npm packages",
+      "command": "npm install"
+    },
+    {
+      "type": "command",
+      "description": "Run initial build",
+      "command": "npm run build"
+    }
+  ],
+  "rules": [
+    "principles/solid.md",
+    "principles/dry-kiss.md"
+  ],
+  "conventions": {
+    "components": "PascalCase",
+    "services": "PascalCase + Service suffix",
+    "models": "PascalCase + Model/DTO suffix",
+    "files": "kebab-case",
+    "selectors": "{{prefix}}-kebab-case"
+  }
+}

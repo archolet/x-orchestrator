@@ -1,0 +1,50 @@
+{
+  "$schema": "https://x-orchestrator.claude.ai/schemas/session.json",
+  "description": "X-Orchestrator Session State Template",
+  "_usage": "This file is auto-generated at {project}/.claude/x-state/current-session.json",
+
+  "session_id": "",
+  "project_path": "",
+  "started_at": "",
+  "updated_at": "",
+
+  "status": "idle",
+
+  "context": {
+    "hot_files": [],
+    "recent_changes": [],
+    "loaded_rules": []
+  },
+
+  "execution": {
+    "current_task": null,
+    "completed_tasks": [],
+    "pending_tasks": []
+  },
+
+  "agents": {
+    "invocations": []
+  },
+
+  "checkpoints": [],
+
+  "rollback_points": [],
+
+  "metrics": {
+    "files_read": 0,
+    "files_written": 0,
+    "files_edited": 0,
+    "commands_executed": 0,
+    "agents_invoked": 0,
+    "tokens_used": {
+      "input": 0,
+      "output": 0
+    }
+  },
+
+  "lock": {
+    "owner": null,
+    "acquired_at": null,
+    "expires_at": null
+  }
+}
