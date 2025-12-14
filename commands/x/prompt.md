@@ -1,208 +1,179 @@
 ---
-description: Akıllı prompt analizi ve execution - X-Orchestrator ana komutu
-allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, WebSearch, WebFetch
-argument-hint: <istek> [--no-confirm] [--dry-run]
+description: Akıllı prompt analizi ve execution - X-Orchestrator v3.1
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, Task, WebSearch, mcp__context7, mcp__sequentialthinking
+argument-hint: <istek> [--ultrathink] [--c7] [--seq] [--websearch] [--no-confirm] [--dry-run]
 model: opus
 ---
 
 # X-Orchestrator: Akıllı Prompt Analizi
 
-Sen X-Orchestrator'ın ana prompt işleyicisisin. Kullanıcının isteğini analiz edecek, plan oluşturacak ve onay sonrası execute edeceksin.
+$ARGUMENTS içindeki isteği işle.
 
-## Argümanlar
-$ARGUMENTS
+## FLAG PARSER
 
-## Flags
-- `--no-confirm`: Plan onayı atla (dikkatli kullan)
-- `--dry-run`: Sadece plan göster, execute etme
+### Desteklenen Flag'ler
+| Flag | Kısa | Açıklama | Otomatik Tetikleyici |
+|------|------|----------|---------------------|
+| `--ultrathink` | `-u` | Maximum reasoning (31999 token thinking) | Mimari değişiklik, karmaşık refactoring |
+| `--c7` | `-c` | Context7 MCP ile dokümantasyon | Paket güncelleme, framework kullanımı |
+| `--seq` | `-s` | Sequential Thinking ile adım adım | Multi-step task, 5+ dosya değişikliği |
+| `--websearch` | `-w` | Zorla web araması | Versiyon kontrolü, güncel bilgi |
+| `--no-confirm` | `-y` | Onay sormadan çalıştır | - |
+| `--dry-run` | `-d` | Sadece plan göster | - |
+| `--deep` | | Derinlemesine analiz | - |
 
-## Execution Flow
+### Flag Parsing
+1. $ARGUMENTS içindeki flag'leri tespit et
+2. Flag'leri ayır, asıl prompt'u çıkar
+3. Her flag için ilgili tool/MCP'yi aktifleştir
 
-### Phase 0: Pre-Flight Check
+### Otomatik Flag Tetikleme (AUTO-FLAGS)
+Aşağıdaki keyword'ler tespit edilirse flag OTOMATIK aktifleşir:
 
-1. **MCP Health Check**
-   ```bash
-   ~/.claude/x-orchestrator/hooks/mcp-health-check-parallel.sh
-   ```
-   - Tüm MCP'lerin durumunu kontrol et
-   - Circuit breaker durumlarını kontrol et
-   - Degraded mode'a geçiş gerekli mi?
+**--ultrathink otomatik:**
+- "karmaşık", "complex", "mimari", "architecture"
+- "refactor", "redesign", "migration"
+- "tüm", "hepsi", "all", "entire"
+- 10+ dosya etkilenecekse
 
-2. **Context Usage Check**
-   - Mevcut context kullanımını kontrol et
-   - %70 üzerindeyse uyar
-   - %90 üzerinde kritik uyarı
+**--c7 otomatik:**
+- "paket", "package", "NuGet", "npm", "pip"
+- "güncelle", "update", "upgrade"
+- Framework isimleri: "Angular", "React", "EF Core", "ASP.NET"
 
-3. **Lock Check**
-   - Başka kullanıcı var mı kontrol et
-   - Lock acquire et
+**--seq otomatik:**
+- "adım adım", "step by step"
+- "sırayla", "sequential"
+- 5+ adımlık plan gerekiyorsa
 
-### Phase 0a: Teknoloji Versiyon Auto-Verify (KRİTİK!)
+**--websearch otomatik:**
+- Versiyon numarası içeren istekler
+- "latest", "en son", "güncel", "current"
+- "2024", "2025" gibi yıl referansları
 
-Claude'un bilgi tabanı Ocak 2025'te kesildiğinden, güncel teknoloji versiyonları için **MUTLAKA** web araması yap.
+## PHASE 0: PRE-FLIGHT & FLAG ACTIVATION
 
-**Trigger Keywords Tespit:**
-İstek şu kelimeleri içeriyorsa AUTO-VERIFY aktive et:
-- `.NET`, `dotnet`, `C#` + (`versiyon`, `güncelle`, `upgrade`, `migrate`, `yeni`, `geçir`)
-- `Node.js`, `npm` + (`versiyon`, `güncelle`, `LTS`, `upgrade`)
-- `Angular`, `React`, `Vue`, `Next.js` + (`versiyon`, `güncelle`, `upgrade`)
-- `Java`, `Spring`, `JDK` + (`versiyon`, `güncelle`, `LTS`, `upgrade`)
-- `Python` + (`versiyon`, `güncelle`, `upgrade`)
-- `TypeScript`, `Go`, `Rust`, `Kotlin`, `Flutter`, `Dart` + (`versiyon`, `güncelle`)
-- Genel: `upgrade`, `migrate`, `güncelle`, `latest version`, `en son sürüm`, `yeni versiyona geçir`
-
-**Auto-Verify İşlemi:**
-
-1. Trigger tespit edilirse kullanıcıya bildir:
-   ```
-   🔍 Auto-Verify: [teknoloji] versiyonu kontrol ediliyor...
-   ```
-
-2. WebSearch VEYA mcp__context7 kullan:
-   - **WebSearch** (öncelikli): "[teknoloji] latest stable version 2025 release date"
-   - **mcp__context7** (alternatif): Güncel dokümantasyon için library docs
-
-3. Sonucu kaydet ve plana dahil et:
-   ```
-   ✅ Doğrulandı: .NET 10 (Release: Kasım 2025, STS - 18 ay destek)
-   📅 Kaynak: Web araması (2025-12-14)
-   ⚠️  Not: Claude bilgi tabanı Ocak 2025'te kesilmiştir
-   ```
-
-4. Eğer web araması başarısız olursa:
-   ```
-   ⚠️  Uyarı: Web araması yapılamadı.
-   Versiyon bilgisi Claude bilgi tabanından alındı (Ocak 2025 - GÜNCEl DEĞİL OLABİLİR!).
-   Güncel bilgi için: --websearch veya --c7 flag'i ile tekrar deneyin.
-   ```
-
-**Örnek Trigger ve Aramalar:**
-
-| Kullanıcı İsteği | WebSearch Query |
-|------------------|------------------|
-| "Projeyi .NET 10'a güncelle" | ".NET 10 release date features stable 2025" |
-| "Angular'ı son sürüme geçir" | "Angular latest version 2025 stable release" |
-| "Node.js LTS kullan" | "Node.js LTS version 2025 current" |
-| "React 19 ile yeni proje" | "React 19 release date stable 2025" |
-| "Java 21'e migrate et" | "Java 21 LTS features release 2025" |
-
-**mcp__context7 Kullanımı (--c7 flag'i veya WebSearch başarısızsa):**
+### 0.1 Flag Parse
 ```
-mcp__context7__resolve-library-id: "[teknoloji-adı]"
-mcp__context7__get-library-docs: topic="version" veya "release"
+Örnek: "/x:prompt --c7 --ultrathink paketleri güncelle"
+→ Flags: [c7, ultrathink]
+→ Prompt: "paketleri güncelle"
 ```
 
-**ZORUNLU:** Teknoloji versiyon bilgisi içeren her plan, bilgi kaynağını belirtmeli:
-- 🌐 Web araması ile doğrulandı
-- 📚 Context7 dokümantasyonundan alındı
-- ⚠️ Claude bilgi tabanından (potansiyel olarak eski)
-
-### Phase 1: Prompt Analysis
-
-x-prompt-analyzer agent'ı çağır:
-
+### 0.2 Auto-Flag Detection
+Prompt'u analiz et ve otomatik flag'leri aktifleştir:
 ```
-Task: Kullanıcının isteğini analiz et
-
-İstek: $ARGUMENTS
-
-Analiz kriterleri:
-1. Netlik: İstek tek bir şekilde mi anlaşılabilir?
-2. Kapsam: Hangi dosyalar/modüller etkilenecek?
-3. Context: Mevcut kod hakkında bilgi gerekiyor mu?
-4. Risk: Breaking changes var mı?
-
-Output format:
-{
-  "clarity": "clear|ambiguous|unclear",
-  "ambiguities": ["soru1", "soru2"],
-  "affected_scope": {
-    "files": ["path1"],
-    "modules": ["module1"],
-    "estimated_size": "small|medium|large"
-  },
-  "required_context": ["file1"],
-  "applicable_rules": ["rule1.md"],
-  "risks": ["risk1"],
-  "recommended_approach": "açıklama"
-}
+Örnek: "Tüm NuGet paketlerini son sürüme güncelle"
+→ Auto-flags: [c7, websearch, ultrathink]
+→ Sebep: "NuGet" → c7, "son sürüm" → websearch, "Tüm" → ultrathink
 ```
 
-### Phase 2: Rules & Context Loading
+### 0.3 Flag Aktivasyonu
+Aktif flag'lere göre araçları hazırla:
 
-1. `.claude/rules/` klasörünü tara
-2. Etkilenecek dosyalarla eşleşen rules'ları yükle
-3. Architecture patterns'ları kontrol et (DDD, CQRS, Clean Arch)
-
-### Phase 3: Clarification (Gerekirse)
-
-Eğer belirsizlik varsa, kullanıcıya sor:
-- Hangi dosya/modül?
-- Neden bu değişiklik?
-- Scope ne kadar?
-- Bağımlılıklar?
-
-### Phase 4: Plan Creation
-
-x-plan-creator agent'ı çağır:
-
+**--ultrathink aktifse:**
 ```
-Task: Execution planı oluştur
+🧠 Ultrathink Mode: Aktif
+Thinking budget: 31999 token
+```
+Prompt'un başına "Ultrathink." ekle.
 
-Analiz sonucu: [Phase 1 output]
-Kullanıcı cevapları: [Phase 3 output]
+**--c7 aktifse:**
+```
+📚 Context7 Mode: Aktif
+```
+İlgili teknoloji için `mcp__context7` ile dokümantasyon çek.
 
-Plan kriterleri:
-1. Dosya planı: read/write/edit/create/delete
-2. Adım sıralaması: Bağımlılık sırasına göre
-3. Araç seçimi: MCP'ler, agent'lar, bash
-4. Doğrulama adımları: Her adım sonrası kontrol
-5. Rollback noktaları: Kritik adımlardan önce
+**--seq aktifse:**
+```
+🔢 Sequential Thinking Mode: Aktif
+```
+`mcp__sequentialthinking` ile adım adım reasoning yap.
 
-Output format:
-{
-  "objective": "Kısa açıklama",
-  "estimated_tokens": 5000,
-  "estimated_cost_usd": 0.15,
-  "steps": [
-    {
-      "order": 1,
-      "action": "read|write|edit|bash|subagent",
-      "target": "path/to/file",
-      "description": "Ne yapılacak",
-      "verification": "Nasıl doğrulanacak",
-      "rollback_point": true
-    }
-  ],
-  "mcp_requirements": {
-    "serena": "required|optional|not_needed"
-  },
-  "rollback_plan": "Hata durumunda ne yapılacak",
-  "success_criteria": ["kriter1"]
-}
+**--websearch aktifse:**
+```
+🌐 Web Search Mode: Aktif
+```
+İlgili teknoloji/versiyon için web araması yap.
+
+### 0.4 Flag Status Göster
+```
+╔═══════════════════════════════════════╗
+║  🚀 X-ORCHESTRATOR FLAGS              ║
+╠═══════════════════════════════════════╣
+║  --ultrathink  ✅ (auto: "Tüm")       ║
+║  --c7          ✅ (auto: "NuGet")     ║
+║  --seq         ✅ (manual)            ║
+║  --websearch   ✅ (auto: "güncelle")  ║
+╚═══════════════════════════════════════╝
 ```
 
-### Phase 5: Plan Presentation
+## PHASE 1: PROMPT ANALİZİ
 
-Planı kullanıcıya göster:
+1. Flag'ler ayrıldıktan sonra asıl isteği parse et
+2. Belirsizlikleri tespit et
+3. Etkilenecek dosyaları belirle
+4. **--c7 aktifse:** İlgili paket/framework dokümantasyonu çek
+5. **--websearch aktifse:** Versiyon doğrulaması yap
 
+## PHASE 2: CONTEXT & DOCUMENTATION
+
+### --c7 Aktifse
+```
+mcp__context7 kullanarak:
+1. İlgili framework/library için dokümantasyon al
+2. Best practices kontrol et
+3. Breaking changes kontrol et
+4. Migration guide varsa al
+```
+
+### --seq Aktifse
+```
+mcp__sequentialthinking kullanarak:
+1. Problemi parçalara ayır
+2. Her parça için çözüm düşün
+3. Parçaları birleştir
+4. Edge case'leri kontrol et
+```
+
+## PHASE 3: RULES & CONTEXT LOADING
+
+1. `.claude/rules/` klasörünü kontrol et
+2. Path-matching ile ilgili kuralları yükle
+
+## PHASE 4: CLARIFICATION (Gerekirse)
+
+Belirsizlik varsa kullanıcıya sor.
+
+## PHASE 5: PLAN OLUŞTUR
+
+**Plan şablonu (flag'lerle):**
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║  📋 EXECUTION PLAN                                           ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Hedef: [Anlaşılan istek]                                   ║
+║  🚀 Aktif Flags: --ultrathink --c7 --websearch              ║
+║                                                              ║
+║  Hedef: [İstek özeti]                                        ║
+║                                                              ║
+║  🔍 Verification (--websearch):                             ║
+║  • [Teknoloji] [Versiyon]: [Release durumu]                 ║
+║                                                              ║
+║  📚 Context7 Docs (--c7):                                   ║
+║  • [Dokümantasyon özeti]                                    ║
+║  • Breaking changes: [varsa listele]                        ║
 ║                                                              ║
 ║  📁 Etkilenecek Dosyalar:                                   ║
 ║  • [dosya listesi]                                          ║
 ║                                                              ║
-║  📝 Adımlar:                                                ║
-║  1. [RP1] Adım açıklaması                                   ║
-║  2. [RP2] Adım açıklaması                                   ║
+║  📝 Adımlar (--seq ile planlandı):                          ║
+║  1. [adım]                                                   ║
+║  2. [adım]                                                   ║
 ║                                                              ║
-║  🔄 Rollback Points: RP1, RP2                               ║
-║  ⚙️  MCP: [status]                                          ║
-║  🤖 Model: Opus 4.5                                         ║
-║  💰 Tahmini: ~Xk token (~$X.XX)                             ║
+║  ⚠️  Riskler:                                               ║
+║  • [risk listesi]                                           ║
+║                                                              ║
+║  💰 Tahmini: ~[X]k token (~$[Y])                            ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  [A] ✅ Onayla ve çalıştır                                  ║
 ║  [B] 📝 Planı düzenle                                       ║
@@ -210,59 +181,31 @@ Planı kullanıcıya göster:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-`--no-confirm` flag'i varsa direkt execute et.
-`--dry-run` flag'i varsa sadece planı göster ve dur.
+## PHASE 6-7: EXECUTION & POST
 
-### Phase 6: Execution
+1. **--ultrathink aktifse:** Her adımda derinlemesine düşün
+2. Rollback point oluştur
+3. Adım adım execute et
+4. Her adımda doğrula
+5. Session state güncelle
 
-1. Her adımdan önce rollback point oluştur:
-   ```bash
-   ~/.claude/x-orchestrator/hooks/pre-write-guard.sh "$FILE" "$OPERATION"
-   ```
+## Dil Kuralları
 
-2. x-code-generator agent'ı çağır:
-   ```
-   Task: Planı implement et
-   Plan: [Phase 4 output]
+- Açıklamalar Türkçe
+- Teknik terimler İngilizce (function, class, deploy, refactor, vb.)
+- Kod comment'leri İngilizce
 
-   Kurallar:
-   - Önce oku, pattern'ları anla
-   - Rules'lara uy
-   - Küçük, odaklı değişiklikler
-   - Her adımda lint/compile kontrol
-   - Hata varsa DUR
-   ```
+## Örnek Kullanımlar
+```
+/x:prompt --ultrathink Auth modülünü refactor et
+→ Flags: [ultrathink]
+→ 🧠 Maximum reasoning aktif
 
-3. Her adım sonrası doğrulama yap
+/x:prompt --c7 --websearch Angular'ı güncelle
+→ Flags: [c7, websearch]
+→ 📚 Angular docs + 🌐 versiyon kontrolü
 
-### Phase 6a: Error Recovery (Hata Durumunda)
-
-1. Hatayı logla:
-   ```bash
-   ~/.claude/x-orchestrator/hooks/error-handler.sh log "error_type" "message"
-   ```
-
-2. Rollback yap:
-   ```bash
-   ~/.claude/x-orchestrator/hooks/rollback-engine.sh restore "$ROLLBACK_ID"
-   ```
-
-3. Kullanıcıya bildir
-
-### Phase 7: Post-Execution
-
-1. Session state güncelle
-2. Telemetry kaydet:
-   ```bash
-   ~/.claude/x-orchestrator/hooks/telemetry-collector.sh "command_executed" '{"command": "/x:prompt"}'
-   ```
-3. "Başka bir şey?" sor
-
-## Thinking Keywords
-
-- Karmaşık task için prompt'a "Think harder." eklenirse derin analiz yap
-- "Ultrathink." eklenirse maximum reasoning uygula
-
-## Output Format
-
-Her fazın sonucu Türkçe açıklamalarla sunulmalı. Kullanıcı dostane bir dil kullan.
+/x:prompt tüm NuGet paketlerini son sürüme güncelle
+→ Auto-flags: [ultrathink, c7, websearch]
+→ "tüm" → ultrathink, "NuGet" → c7, "son sürüm" → websearch
+```
